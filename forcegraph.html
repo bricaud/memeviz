@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links line {
+  stroke: #000;
+  stroke-opacity: 0.9;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.nodes text {
+  font: 14px helvetica;
+}
+
+</style>
+<svg width="1200" height="900"></svg>
+<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+<script src="d3.v4.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+function node_size(d){
+  return Math.sqrt(d.degree)*0.1+2;
+}
+
+// Define the zoom function
+svg.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .call(d3.zoom()
+        .scaleExtent([1 / 2, 4])
+        .on("zoom", zoomed));
+
+var svg_graph = d3.select("svg").append("g");
+  //  .call(d3.zoom().on("zoom", zoomed));
+  //svg=svg1.append("g");
+
+function zoomed() {
+  svg_graph.attr('transform', d3.event.transform);
+}
+
+
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.id; }).strength(function(d){return d.weight*0.1;}))//distance(100)
+    .force("charge", d3.forceManyBody().strength(-300).distanceMax(150))
+    //.force("center", d3.forceCenter(width / 2, height / 2))
+    .force("y",d3.forceY().strength(0.01))
+    .force("x",d3.forceX().strength(0.01));
+
+d3.json("graph.json", function(error, graph) {
+  if (error) throw error;
+
+  //var node_size = 10;
+  var link = svg_graph.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(graph.links)
+    .enter().append("line")
+      .attr("stroke-width", function(d) { return d.weight*4*2;})// Math.sqrt(d.weight)*10; })
+      .style("opacity", function(d) { return d.weight;});
+      //.append("title").text(function(d) { return d.weight; });
+
+  var node = svg_graph.append("g")
+      .attr("class", "nodes")
+    .selectAll("g")
+    .data(graph.nodes)
+    .enter().append("g")
+
+  var nodeC = node.append("circle")
+      //.attr("r", function(d){ return Math.sqrt(d.bCentrality)*100;})//node_size)
+      .attr("r", node_size)
+      .attr("fill", function(d) { return color(d.cluster); })
+
+  nodeC.on('dblclick', releasenode)
+      .on('mouseover',mouseover)
+      .on('mouseout',mouseout)
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+  var text2 = node.append("text")
+    //.attr("x", 12)
+    //.attr("y", 15)
+    .attr("x",function(d){return node_size(d)+2;})
+    .attr("y",node_size)
+    .text(function(d) {return d.id;});
+
+  nodeC.append("title")
+      .text(function(d) { return d.id; });
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+    node
+       .attr("transform", function(d) { return "translate(" + d.x + ", " + d.y + ")"; });  
+    // node
+    //     .attr("cx", function(d) { return d.x; })
+    //     .attr("cy", function(d) { return d.y; });
+  }
+});
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  //d.fx = null;
+  //d.fy = null;
+}
+
+function releasenode(d){
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+/*
+function mouseover(d){
+  console.log(d.id);
+  d3.selectAll(".links").selectAll("line").style('stroke-width', function(l) {
+    if (d.id === l.source.id || d.id === l.target.id)
+      return 10;
+    else
+      return d.weight*4*2;
+    });
+}
+
+function mouseout(d){
+ d3.selectAll(".links").selectAll("line").style('stroke-width', function(d){return d.weight*4*2;});
+}
+*/
+function mouseover(d){
+  console.log(d.id + ', cluster: '+d.cluster);
+  d3.selectAll(".links").selectAll("line").style('opacity', function(l) {
+    if (d.id === l.source.id || d.id === l.target.id)
+      return l.weight;
+    else
+      return 0.1;
+    });
+}
+
+function mouseout(d){
+ d3.selectAll(".links").selectAll("line").style('opacity', function(d){return d.weight;});
+}
+
+</script>
