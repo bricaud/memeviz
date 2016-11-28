@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js">
+
+function postData(input) {
+    $.ajax({
+        type: "POST",
+        url: "/testpythoncall.py",
+        data: { param: input },
+        success: callbackFunc
+    });
+}
+
+function callbackFunc(response) {
+    // do something with the response
+    console.log(response);
+}
+
+postData('data to process');
+
+</script>
+</body>
+</html>
