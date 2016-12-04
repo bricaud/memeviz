@@ -30,10 +30,30 @@ Options
 <script src="treegraph/treegraph-module.js"></script>
 
 <script>
+var tree_switch = 0;
 var data_file1 = "data/ccomponent.json";
 forcegraph(data_file1,d3.select("#svg-forcegraph"));
 var data_file2 = "data/treegraphmarseille.json";
-treegraph(data_file2,d3.select("#svg-treegraph"));
+var data_file3 = "data/treegraphLBDL.json";
+treegraph.start(data_file3,d3.select("#svg-treegraph"));
+
+function dashboard_event_call(id,object){
+  console.log(id);
+  console.log(object);
+  console.log(tree_switch);
+  var data_fileX = data_file3;
+  if (tree_switch === 0) {
+    tree_switch = 1;
+    data_fileX = data_file3;
+  }
+  else {
+    tree_switch = 0;
+    data_fileX = data_file2;
+  }
+
+  treegraph.update(data_fileX,d3.select("#svg-treegraph"));
+}
+
 </script>
 
 

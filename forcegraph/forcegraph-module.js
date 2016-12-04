@@ -148,5 +148,8 @@ function forcegraph(data_file,svg_in) {
       d.fx = null;
       d.fy = null;
     }
+    else {
+      dashboard_event_call(1,d.name);
+    }
   }
 }

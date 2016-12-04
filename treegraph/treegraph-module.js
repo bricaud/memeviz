@@ -1,30 +1,48 @@
+var treegraph = (function(){
+  // Module for the tree graph 
 
-function treegraph(data_file,svg_in){
+  var _svg = {};
+  var _svg_width = 0, 
+    _svg_height = 0;
 
-  var width = +svg_in.attr("width"),
-      height = +svg_in.attr("height")
-  var svg = svg_in.call(d3.zoom().on("zoom", function () {
-        svg.attr("transform", d3.event.transform)
-      })).append("g");
-  var g = svg.append("g").attr("id","treegraph")
-            .attr("transform", "translate(" + (width / 2 ) + "," + (height / 2 ) + ")");
-            //.attr("transform", "rotate(90)");
+  var figure = {};
 
-  var stratify = d3.stratify()
-      .parentId(function(d) { return d.id.substring(0, d.id.lastIndexOf(".")); });
+  function start(data_file,svg_in){
 
-  var tree = d3.tree()
-      .size([360, width*3/4])
-      .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+    _svg_width = +svg_in.attr("width");
+    _svg_height = +svg_in.attr("height");
+    _svg = svg_in;
+    var svg = svg_in.call(d3.zoom().on("zoom", function () {
+          svg.attr("transform", d3.event.transform)
+        })).append("g");
+    figure = svg.append("g").attr("id","treegraph")
+              .attr("transform", "translate(" + (_svg_width / 2 ) + "," + (_svg_height / 2 ) + ")");
+              //.attr("transform", "rotate(90)");
+    handle_data(data_file);
+  }
 
-  d3.json(data_file, function(error, data) {
-    if (error) throw error;
+  function handle_data(data_file){
 
-    //var root = tree(stratify(data));
-    //var root = tree(data);
-    var root = tree(d3.hierarchy(data));
-    
-    var link = g.selectAll(".link")
+    var stratify = d3.stratify()
+        .parentId(function(d) { return d.id.substring(0, d.id.lastIndexOf(".")); });
+
+    var tree = d3.tree()
+        .size([360, _svg_width*3/4])
+        .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+
+    d3.json(data_file, function(error, data) {
+      if (error) throw error;
+
+      //var root = tree(stratify(data));
+      //var root = tree(data);
+      var root = tree(d3.hierarchy(data));
+      draw_graph(root);
+    });
+  }
+
+  function draw_graph(tree_data){
+    root = tree_data;    
+    var link = figure.selectAll(".link")
       .data(root.descendants().slice(1))
       .enter().append("path")
         .attr("class", "link")
@@ -35,7 +53,7 @@ function treegraph(data_file,svg_in){
               + " " + project(d.parent.x, d.parent.y);
         }).style("opacity", function(d) { return Math.sqrt(d.data.occur/100.0);});
 
-    var node = g.selectAll(".node")
+    var node = figure.selectAll(".node")
       .data(root.descendants())
       .enter().append("g")
         .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
@@ -55,7 +73,7 @@ function treegraph(data_file,svg_in){
         .attr("transform", function(d) { return "rotate(" + (d.x < 180 ? d.x - 90 : d.x + 90) + ")"; })
         //.text(function(d) { return d.id.substring(d.id.lastIndexOf(".") + 1); });
         .text(function(d) { return d.data.name+" "+d.data.occur; });
-  });
+  }
 
   function project(x, y) {
     var angle = (x - 90) / 180 * Math.PI, radius = y;
@@ -71,4 +89,20 @@ function treegraph(data_file,svg_in){
     //selectNode(d);
 
   }
-}
+
+  function update(data_file,svg_in){
+    clean_svg();
+    handle_data(data_file);
+  }
+
+  function clean_svg(){
+    figure.selectAll("*").remove();
+  }
+
+
+  return {
+    start : start,
+    clean_svg : clean_svg,
+    update : update
+  }
+})();
