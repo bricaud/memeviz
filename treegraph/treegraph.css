@@ -1,0 +1,33 @@
+
+#treegraph .node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+#treegraph .node text {
+  font: 12px sans-serif;
+}
+
+#treegraph .node--internal circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+#treegraph .node--internal text {
+  text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
+
+#treegraph .link {
+  fill: none;
+  stroke: #555;
+  stroke-opacity: 0.4;
+  stroke-width: 1.5px;
+}
+
+#treegraph .selected{
+  fill: #555;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
