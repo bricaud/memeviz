@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+
+<link rel="stylesheet" type="text/css" href="treegraph/treegraph-module.css">
+<link rel="stylesheet" type="text/css" href="forcegraph/forcegraph-module.css">
+</head>
+<body>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<div id="graph_props">
+  <div id="graph_name"></div>
+  <div id ="graph_start_date"></div>
+  <div id = "graph_end_date"></div>
+</div>
+<div>
+Options
+<form name="colorform">
+  <input type="radio" name="colorchoice" value="absolute" checked> Color according to absolute time<br>
+  <input type="radio" name="colorchoice" value="relative"> color according to relative component time<br>
+  <input type="button" onclick="update_graph(graph)" value="Update color">
+</form> 
+</div>
+
+<svg width="960" height="600" id="svg-forcegraph"></svg>
+<svg width="600" height="600" id="svg-treegraph"></svg>
+<script src="forcegraph/forcegraph-module.js"></script>
+<script src="treegraph/treegraph-module.js"></script>
+
+<script>
+var data_file1 = "data/ccomponent.json";
+forcegraph(data_file1,d3.select("#svg-forcegraph"));
+var data_file2 = "data/treegraphmarseille.json";
+treegraph(data_file2,d3.select("#svg-treegraph"));
+</script>
+
+
+
+
+
+</body>
