@@ -2,6 +2,15 @@ function forcegraph(data_file,svg_in) {
   var width = +svg_in.attr("width"),
       height = +svg_in.attr("height");
 
+  var borderPath = svg_in.append("rect")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("height", height)
+          .attr("width", width)
+          .style("stroke", 'black')
+          .style("fill", "none")
+          .style("stroke-width", 1);
+
   var svg = svg_in.call(d3.zoom().on("zoom", function () {
           svg.attr("transform", d3.event.transform)
         }))
@@ -20,10 +29,14 @@ function forcegraph(data_file,svg_in) {
       .force("charge", d3.forceManyBody())
       .force("center", d3.forceCenter(width / 2, height / 2));
 
+  var data_start_date = 0;
+  var data_end_date = 0;
   //////////////////////////////////////////////////////////////////////:
   var graph = d3.json(data_file, function(error, data) {
     if (error) throw error;
     graph = data;
+    data_start_date = graph.start_date;
+    data_end_date = graph.end_date;
     write_graph_props(graph);
     update_graph(graph);
   });
@@ -149,7 +162,7 @@ function forcegraph(data_file,svg_in) {
       d.fy = null;
     }
     else {
-      dashboard_event_call(1,d.name);
+      dashboard_event_call(1,d.name,data_start_date,data_end_date);
     }
   }
 }

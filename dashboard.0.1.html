@@ -9,6 +9,7 @@
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="jquery-3.1.1.js"></script>
 
 <div id="graph_props">
   <div id="graph_name"></div>
@@ -25,18 +26,23 @@ Options
 </div>
 
 <svg width="960" height="600" id="svg-forcegraph"></svg>
+<p>Messages:</p>
+<div id="console_box"></div>
+<p>Word treegraph:</p>
 <svg width="600" height="600" id="svg-treegraph"></svg>
 <script src="forcegraph/forcegraph-module.js"></script>
 <script src="treegraph/treegraph-module.js"></script>
 
 <script>
-var tree_switch = 0;
+var series = 'LBDL';
+console_box = document.getElementById("console_box");
 var data_file1 = "data/ccomponent.json";
 forcegraph(data_file1,d3.select("#svg-forcegraph"));
 var data_file2 = "data/treegraphmarseille.json";
 var data_file3 = "data/treegraphLBDL.json";
 treegraph.start(data_file3,d3.select("#svg-treegraph"));
 
+/*
 function dashboard_event_call(id,object){
   console.log(id);
   console.log(object);
@@ -50,10 +56,55 @@ function dashboard_event_call(id,object){
     tree_switch = 0;
     data_fileX = data_file2;
   }
-
+  run_python(object);
   treegraph.update(data_fileX,d3.select("#svg-treegraph"));
 }
+*/
 
+function dashboard_event_call(id,word,data_start_date,data_end_date){
+  console.log(id);
+  console.log(word);
+  console_box.innerHTML ="Computing for word "+word+"...";
+  run_python(word,data_start_date,data_end_date);
+}
+
+
+function run_python(word,data_start_date,data_end_date){
+  url = "http://localhost:8082/exec?word="+word
+  url = "http://localhost:8082/exec"
+  data_json = {"word" : word,"series" : series,
+                "start_date" : data_start_date,"end_date" : data_end_date}
+  console.log('sending an ajax request')
+  $.ajax({
+    //method: 'POST',
+    url: url,
+    data: data_json,//JSON.stringify(data_json),
+    success : success_r,
+    error: function(data, status, erreur){
+      console.log('error');
+      console.log(erreur);
+      console_box.innerHTML = erreur;
+    },
+    complete : function(data, status){console.log('complete!');},
+    //dataType: 'text/html'
+    //dataType: 'text/html'
+  });
+  function success_r(data, status){
+    console.log('resquest succeeded');
+    var filename = get_filename(data);
+    console.log('file to display: '+filename);
+    treegraph.update(filename,d3.select("#svg-treegraph"));
+    console_box.innerHTML = "Computation completed."
+  }
+  function get_filename(server_response){
+    // the filename is the last string sent by the server
+    answer = server_response.split(' ');
+    full_path = answer[answer.length - 1];
+    full_path = full_path.split('/')
+    return full_path[full_path.length - 1]
+  }
+
+}
 </script>
 
 

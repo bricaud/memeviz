@@ -12,6 +12,16 @@ var treegraph = (function(){
     _svg_width = +svg_in.attr("width");
     _svg_height = +svg_in.attr("height");
     _svg = svg_in;
+
+    var borderPath = svg_in.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("height", _svg_height)
+            .attr("width", _svg_width)
+            .style("stroke", 'black')
+            .style("fill", "none")
+            .style("stroke-width", 1);
+
     var svg = svg_in.call(d3.zoom().on("zoom", function () {
           svg.attr("transform", d3.event.transform)
         })).append("g");
