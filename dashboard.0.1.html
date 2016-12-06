@@ -11,6 +11,8 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="jquery-3.1.1.js"></script>
 
+
+
 <div id="graph_props">
   <div id="graph_name"></div>
   <div id ="graph_start_date"></div>
@@ -25,11 +27,20 @@ Options
 </form> 
 </div>
 
-<svg width="960" height="600" id="svg-forcegraph"></svg>
+<svg width="960" height="960" id="svg-forcegraph"></svg>
 <p>Messages:</p>
 <div id="console_box"></div>
 <p>Word treegraph:</p>
-<svg width="600" height="600" id="svg-treegraph"></svg>
+<svg width="960" height="960" id="svg-treegraph"></svg>
+<div>
+Options
+<form name="colorform_treegraph">
+  <input type="radio" name="color_choice_treegraph" value="media_color" checked> Color according to the main media<br>
+  <input type="radio" name="color_choice_treegraph" value="time_color"> color according to relative time of appearance<br>
+  <input type="button" onclick="update_treegraph()" value="Update color">
+</form> 
+</div>
+
 <script src="forcegraph/forcegraph-module.js"></script>
 <script src="treegraph/treegraph-module.js"></script>
 
@@ -39,8 +50,8 @@ console_box = document.getElementById("console_box");
 var data_file1 = "data/ccomponent.json";
 forcegraph(data_file1,d3.select("#svg-forcegraph"));
 var data_file2 = "data/treegraphmarseille.json";
-var data_file3 = "data/treegraphLBDL.json";
-treegraph.start(data_file3,d3.select("#svg-treegraph"));
+var data_file_treegraph = "data/treegraphLBDL.json";
+treegraph.start(data_file_treegraph,d3.select("#svg-treegraph"));
 
 /*
 function dashboard_event_call(id,object){
@@ -91,9 +102,9 @@ function run_python(word,data_start_date,data_end_date){
   });
   function success_r(data, status){
     console.log('resquest succeeded');
-    var filename = get_filename(data);
-    console.log('file to display: '+filename);
-    treegraph.update(filename,d3.select("#svg-treegraph"));
+    data_file_treegraph = get_filename(data);
+    console.log('file to display: '+data_file_treegraph);
+    treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"));
     console_box.innerHTML = "Computation completed."
   }
   function get_filename(server_response){
@@ -104,6 +115,10 @@ function run_python(word,data_start_date,data_end_date){
     return full_path[full_path.length - 1]
   }
 
+}
+
+function update_treegraph(){
+  treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"))
 }
 </script>
 

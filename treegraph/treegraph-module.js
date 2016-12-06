@@ -1,11 +1,18 @@
 var treegraph = (function(){
   // Module for the tree graph 
 
+
   var _svg = {};
   var _svg_width = 0, 
     _svg_height = 0;
 
   var figure = {};
+  var color = d3.scaleOrdinal(d3.schemeCategory20);
+  var color = d3.scaleOrdinal().domain(['Twitter','Blog','Comment','Dailymotion','Facebook',
+                                        'Forum','Gplus','Instagram','Media','Website','Youtube','Avis'])
+                                .range(['steelblue','green','brown','lightblue','blue','pink','lightred','yellow','orange','lightgreen','red','grey']) 
+
+  var color_shade = d3.scaleSequential(d3.interpolateReds);
 
   function start(data_file,svg_in){
 
@@ -51,6 +58,7 @@ var treegraph = (function(){
   }
 
   function draw_graph(tree_data){
+    var color_choice = d3.select('input[name="color_choice_treegraph"]:checked').node().value;
     root = tree_data;    
     var link = figure.selectAll(".link")
       .data(root.descendants().slice(1))
@@ -70,7 +78,17 @@ var treegraph = (function(){
         .attr("transform", function(d) { return "translate(" + project(d.x, d.y) + ")"; });
 
     node.append("circle")
-        .attr("r", 4.5).on('click',click);
+        .attr("r", 4.5)
+        //.style('fill',function(d){ return color(d.data.main_media)})
+        //.style('fill',function(d){ return color_shade(d.data.relative_time/31)})
+        .style("fill", function(d) { if (color_choice=='media_color') {
+                        return color(d.data.main_media);
+                      }
+                      else {
+                        return color_shade(d.data.relative_time/31);
+                      }
+                    })
+        .on('click',click);
 
     node.append("text")
         .attr("dy", ".31em")
@@ -91,13 +109,16 @@ var treegraph = (function(){
   }
 
   function click (d){
-    var SELECTED_COLOR = '#555';
-    d3.selectAll('.selected').style('fill','#fff');
+    var SELECTED_COLOR = '#fff';
+    d3.selectAll('.selected').style('fill',function(d){ return color(d.data.main_media)});
     d3.selectAll('.selected').classed('selected',false);
     d3.select(this).classed('selected',true);
     d3.selectAll('.selected').style('fill',SELECTED_COLOR);
-    //selectNode(d);
-
+    console.log(d.data.main_media);
+    console_box.innerHTML = d.data.name+", Nb of occurences: "+d.data.occur+
+                              ", main media: "+d.data.main_media+", appearance in media: "+d.data.nb_occur_m_media+
+                              ", start time: "+d.data.start_time+", relative time in days: "+d.data.relative_time
+    
   }
 
   function update(data_file,svg_in){
