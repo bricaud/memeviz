@@ -1,21 +1,12 @@
-function forcegraph(data_file,svg_in) {
-  var width = +svg_in.attr("width"),
-      height = +svg_in.attr("height");
+var forcegraph = (function(){
+  // Module for the force graph 
 
-  var borderPath = svg_in.append("rect")
-          .attr("x", 0)
-          .attr("y", 0)
-          .attr("height", height)
-          .attr("width", width)
-          .style("stroke", 'black')
-          .style("fill", "none")
-          .style("stroke-width", 1);
 
-  var svg = svg_in.call(d3.zoom().on("zoom", function () {
-          svg.attr("transform", d3.event.transform)
-        }))
-          .append("g").attr("id","forcegraph")
+  var _svg = {};
+  var _svg_width = 0, 
+    _svg_height = 0;
 
+  var figure = {};
   var color = d3.scaleOrdinal(d3.schemeCategory20);
   var color = d3.scaleOrdinal(d3.schemeAccent);
   var color = d3.scaleSequential(d3.interpolatePiYG);
@@ -24,22 +15,51 @@ function forcegraph(data_file,svg_in) {
   //var color = d3.scaleSequential(d3.interpolateRdBu);
   //var color = d3.scaleSequential(d3.interpolateInferno);
 
-  var simulation = d3.forceSimulation()
-      .force("link", d3.forceLink().id(function(d) { return d.id; }))
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
-
   var data_start_date = 0;
   var data_end_date = 0;
-  //////////////////////////////////////////////////////////////////////:
-  var graph = d3.json(data_file, function(error, data) {
-    if (error) throw error;
-    graph = data;
-    data_start_date = graph.start_date;
-    data_end_date = graph.end_date;
-    write_graph_props(graph);
-    update_graph(graph);
-  });
+
+  var graph = {};
+  var simulation = {};
+  var svg ={};
+  var link = {};
+  var nodec = {};
+  var text1 = {};
+
+  function start(data_file,svg_in) {
+    _svg_width = +svg_in.attr("width"),
+        _svg_height = +svg_in.attr("height");
+
+    var borderPath = svg_in.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("height", _svg_height)
+            .attr("width", _svg_width)
+            .style("stroke", 'black')
+            .style("fill", "none")
+            .style("stroke-width", 1);
+
+    svg = svg_in.call(d3.zoom().on("zoom", function () {
+            svg.attr("transform", d3.event.transform)
+          }))
+            .append("g").attr("id","forcegraph")
+
+
+    simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(_svg_width / 2, _svg_height / 2));
+
+    //////////////////////////////////////////////////////////////////////:
+    graph = d3.json(data_file, function(error, data) {
+      if (error) throw error;
+      graph = data;
+      data_start_date = graph.start_date;
+      data_end_date = graph.end_date;
+      write_graph_props(graph);
+      update();
+    });
+  }
+
   /////////////////////////////////////////////////////////////////////:
   function write_graph_props(graph){
     name = graph.name
@@ -49,52 +69,12 @@ function forcegraph(data_file,svg_in) {
   }
 
   ////////////////////////////////////////////////////////////////////:
-  function update_graph(graph){
+  function update(){
     var color_choice = d3.select('input[name="colorchoice"]:checked').node().value;
     console.log(color_choice);
 
     svg.selectAll("*").remove();
-
-
-    var link = svg.append("g").attr("class", "links")  
-      .selectAll("line")
-      .data(graph.links)
-      .enter().append("line")
-      //.attr("stroke-width", function(d) { return Math.sqrt(d.value); })
-      .style("marker-end",  "url(#suit)") // Modified line ;
-
-    // definition of nodes
-    var node = svg.selectAll("g").select("node")
-                  .data(graph.nodes)
-                  .enter().append("g")
-                  .attr("class", "node")
-                  .call(d3.drag()
-                  .on("start", dragstarted)
-                  .on("drag", dragged)
-                  .on("end", dragended))
-                  .on("click",mouse_click);
-
-      var nodec = node.append("circle")
-                    .attr("r", function(d){return 2*Math.sqrt(d.nb_occur)+2;})
-                    .style("stroke","black")
-                    //.attr("fill", function(d) { return color(d.color_rel); });
-                    .attr("fill", function(d) { if (color_choice=='absolute') {
-                        return color(d.color);
-                      }
-                      else {
-                        return color(d.color_rel);
-                      }
-                    });
-
-
-    nodec.append("title")
-        .text(function(d) { return 'Nb occur: ' + d.nb_occur +'\n'+ 'Start time: ' + d.start_time; });
-
-    var text1 = node.append("text")
-      .attr("x", 8)
-      .attr("y", ".31em")
-      .text(function(d) { return d.name;});
-
+    draw_graph(graph,color_choice)
     simulation
         .nodes(graph.nodes)
         .on("tick", ticked);
@@ -119,10 +99,51 @@ function forcegraph(data_file,svg_in) {
           .attr("x", function(d) { return d.x+12; })
           .attr("y", function(d) { return d.y; });
     }
+  }
+
+  function draw_graph(graph,color_choice){
+
+    link = svg.append("g").attr("class", "links")  
+      .selectAll("line")
+      .data(graph.links)
+      .enter().append("line")
+      //.attr("stroke-width", function(d) { return Math.sqrt(d.value); })
+      .style("marker-end",  "url(#suit)") // Modified line ;
+
+    // definition of nodes
+    var node = svg.selectAll("g").select("node")
+                  .data(graph.nodes)
+                  .enter().append("g")
+                  .attr("class", "node")
+                  .call(d3.drag()
+                  .on("start", dragstarted)
+                  .on("drag", dragged)
+                  .on("end", dragended))
+                  .on("click",mouse_click);
+
+    nodec = node.append("circle")
+                    .attr("r", function(d){return 2*Math.sqrt(d.nb_occur)+2;})
+                    .style("stroke","black")
+                    //.attr("fill", function(d) { return color(d.color_rel); });
+                    .attr("fill", function(d) { if (color_choice=='absolute') {
+                        return color(d.color);
+                      }
+                      else {
+                        return color(d.color_rel);
+                      }
+                    });
+
+    nodec.append("title")
+        .text(function(d) { return 'Nb occur: ' + d.nb_occur +'\n'+ 'Start time: ' + d.start_time; });
+
+    text1 = node.append("text")
+      .attr("x", 8)
+      .attr("y", ".31em")
+      .text(function(d) { return d.name;});
 
     svg.append("defs").selectAll("marker")
       .data(["suit", "licensing", "resolved"])
-    .enter().append("marker")
+      .enter().append("marker")
       .attr("id", function(d) { return d; })
       .attr("viewBox", "0 -5 10 10")
       .attr("refX", 25)
@@ -130,12 +151,12 @@ function forcegraph(data_file,svg_in) {
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
       .attr("orient", "auto")
-    .append("path")
+      .append("path")
       .attr("d", "M0,-5L10,0L0,5 L10,0 L0, -5")
       .style("stroke", "#4679BD")
       .style("opacity", "0.6");
-
   }
+
 
   function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -165,4 +186,9 @@ function forcegraph(data_file,svg_in) {
       dashboard_event_call(1,d.name,data_start_date,data_end_date);
     }
   }
-}
+
+  return {
+    start : start,
+    update : update
+  }
+})();

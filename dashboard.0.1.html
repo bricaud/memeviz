@@ -23,7 +23,7 @@ Options
 <form name="colorform">
   <input type="radio" name="colorchoice" value="absolute" checked> Color according to absolute time<br>
   <input type="radio" name="colorchoice" value="relative"> color according to relative component time<br>
-  <input type="button" onclick="update_graph(graph)" value="Update color">
+  <input type="button" onclick="update_forcegraph()" value="Update color">
 </form> 
 </div>
 
@@ -48,8 +48,8 @@ Options
 var series = 'LBDL';
 console_box = document.getElementById("console_box");
 var data_file1 = "data/ccomponent.json";
-forcegraph(data_file1,d3.select("#svg-forcegraph"));
-var data_file2 = "data/treegraphmarseille.json";
+forcegraph.start(data_file1,d3.select("#svg-forcegraph"));
+//var data_file2 = "data/treegraphmarseille.json";
 var data_file_treegraph = "data/treegraphLBDL.json";
 treegraph.start(data_file_treegraph,d3.select("#svg-treegraph"));
 
@@ -119,6 +119,10 @@ function run_python(word,data_start_date,data_end_date){
 
 function update_treegraph(){
   treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"))
+}
+
+function update_forcegraph(){
+  forcegraph.update()
 }
 </script>
 
