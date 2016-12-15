@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+
+<link rel="stylesheet" type="text/css" href="treegraph/treegraph-module.css">
+<link rel="stylesheet" type="text/css" href="forcegraph/forcegraph-module.css">
+</head>
+<body>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="jquery-3.1.1.js"></script>
+
+<select name="date_choice" id="date_choice">
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+  <option value="6">6</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="9">9</option>
+  <option value="10">10</option>
+  <option value="11">11</option>
+  <option value="12">12</option>
+</select>
+<br><br>
+<input type="button" onclick="redraw_forcegraph()" value="Choose this month">
+
+<div id="graph_props">
+  <div id="graph_name"></div>
+  <div id ="graph_start_date"></div>
+  <div id = "graph_end_date"></div>
+</div>
+
+<div>
+Options
+<form name="colorform">
+  <input type="radio" name="colorchoice" value="absolute" checked> Color according to absolute time<br>
+  <input type="radio" name="colorchoice" value="relative"> color according to relative component time<br>
+  <input type="button" onclick="update_forcegraph()" value="Update color">
+</form> 
+</div>
+
+<svg width="960" height="960" id="svg-forcegraph"></svg>
+<p>Messages:</p>
+<div id="console_box"></div>
+
+<p>Time series:</p>
+    <div class="days-hours-heatmap">
+      <!-- calibration and render type controller -->
+      <div class="calibration" role="calibration">
+        <div class="group" role="example">
+          <svg width="120" height="17">
+          </svg>
+          <div role="description" class="description">
+            <label>Less</label>
+            <label>More</label>
+          </div>        
+        </div>
+        <div role="toggleDisplay" class="display-control">
+          <div>
+            <input type="radio" name="displayType" checked/>
+            <label>count</label>
+          </div>
+          <div>
+            <input type="radio" name="displayType"/>
+            <label>daily</label> 
+          </div>
+        </div>
+      </div>
+      <!-- heatmap -->
+      <svg role="heatmap" class="heatmap"></svg>
+    </div>
+<p>Messages:</p>
+<div id="console_box_time"></div>
+
+
+<p>Word treegraph:</p>
+<svg width="960" height="960" id="svg-treegraph"></svg>
+<div>
+Options
+<form name="colorform_treegraph">
+  <input type="radio" name="color_choice_treegraph" value="media_color" checked> Color according to the main media<br>
+  <input type="radio" name="color_choice_treegraph" value="time_color"> color according to relative time of appearance<br>
+  <input type="button" onclick="update_treegraph()" value="Update color">
+</form> 
+</div>
+
+
+
+
+
+<script src="forcegraph/forcegraph-module.js"></script>
+<script src="treegraph/treegraph-module.js"></script>
+<script src="timeseries/timeseries-module.js"></script>
+<script>
+var series = 'LBDL';
+var console_box = document.getElementById("console_box");
+var dateselection = document.getElementById("date_choice");
+var date_choice = dateselection.options[dateselection.selectedIndex].value;
+
+var data_file_treegraph = "ccomponents2015_"+date_choice+".json";
+forcegraph.start(data_file_treegraph,d3.select("#svg-forcegraph"));
+//var data_file2 = "data/treegraphmarseille.json";
+var data_file_treegraph = "data/treegraphLBDL.json";
+treegraph.start(data_file_treegraph,d3.select("#svg-treegraph"));
+
+/*
+function dashboard_event_call(id,object){
+  console.log(id);
+  console.log(object);
+  console.log(tree_switch);
+  var data_fileX = data_file3;
+  if (tree_switch === 0) {
+    tree_switch = 1;
+    data_fileX = data_file3;
+  }
+  else {
+    tree_switch = 0;
+    data_fileX = data_file2;
+  }
+  run_python(object);
+  treegraph.update(data_fileX,d3.select("#svg-treegraph"));
+}
+*/
+
+function dashboard_event_call(id,node_data,data_start_date,data_end_date){
+  console.log(id);
+  console.log(node_data);
+  console.log(node_data.name);
+  console_box.innerHTML ="Computing for word "+node_data.name+"...";
+  //run_python(word,data_start_date,data_end_date);
+  path = 'ccomponents/'
+  cc_id = node_data.component_id
+  filename = path+'timecomponent_'+cc_id+'.json'
+  console.log('file to open '+filename)
+  timeseries.initCalibration();
+  timeseries.show(filename)
+}
+
+
+function run_python(word,data_start_date,data_end_date){
+  url = "http://localhost:8082/exec"
+  data_json = {"word" : word,"series" : series,
+                "start_date" : data_start_date,"end_date" : data_end_date}
+  console.log('sending an ajax request')
+  $.ajax({
+    //method: 'POST',
+    url: url,
+    data: data_json,//JSON.stringify(data_json),
+    success : success_r,
+    error: function(data, status, erreur){
+      console.log('error');
+      console.log(erreur);
+      console_box.innerHTML = erreur;
+    },
+    complete : function(data, status){console.log('complete!');},
+    //dataType: 'text/html'
+    //dataType: 'text/html'
+  });
+  function success_r(data, status){
+    console.log('resquest succeeded');
+    data_file_treegraph = get_filename(data);
+    console.log('file to display: '+data_file_treegraph);
+    console_box.innerHTML = "Computation completed."
+    if (data_file_treegraph.indexOf('.json') !== -1){
+      treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"));
+    } else{
+      console_box.innerHTML = "Computation completed. But invalid data file returned."
+    }
+  }
+  function get_filename(server_response){
+    // the filename is the last string sent by the server
+    answer = server_response.split(' ');
+    full_path = answer[answer.length - 1];
+    full_path = full_path.split('/')
+    return full_path[full_path.length - 1]
+  }
+
+}
+
+function update_treegraph(){
+  treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"))
+}
+
+function update_forcegraph(){
+  forcegraph.update()
+}
+
+function redraw_forcegraph(){
+  var dateselection = document.getElementById("date_choice");
+  var date_choice = dateselection.options[dateselection.selectedIndex].value;
+  var data_file1 = "ccomponents2015_"+date_choice+".json";
+  forcegraph.redraw(data_file1,d3.select("#svg-forcegraph"))
+}
+</script>
+
+
+
+
+
+</body>
