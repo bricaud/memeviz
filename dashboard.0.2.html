@@ -4,6 +4,7 @@
 
 <link rel="stylesheet" type="text/css" href="treegraph/treegraph-module.css">
 <link rel="stylesheet" type="text/css" href="forcegraph/forcegraph-module.css">
+<link rel="stylesheet" type="text/css" href="timeseries/timeseries-module.css">
 </head>
 <body>
 
@@ -25,6 +26,10 @@
   <option value="11">11</option>
   <option value="12">12</option>
 </select>
+<select name="year_choice" id="year_choice">
+  <option value="2015">2015</option>
+  <option value="2016">2016</option>
+</select>
 <br><br>
 <input type="button" onclick="redraw_forcegraph()" value="Choose this month">
 
@@ -44,11 +49,11 @@ Options
 </div>
 
 <svg width="960" height="960" id="svg-forcegraph"></svg>
-<p>Messages:</p>
-<div id="console_box"></div>
 
-<p>Time series:</p>
+Time series:
     <div class="days-hours-heatmap">
+    <!-- heatmap -->
+      <svg role="heatmap" class="heatmap"></svg>
       <!-- calibration and render type controller -->
       <div class="calibration" role="calibration">
         <div class="group" role="example">
@@ -70,9 +75,9 @@ Options
           </div>
         </div>
       </div>
-      <!-- heatmap -->
-      <svg role="heatmap" class="heatmap"></svg>
     </div>
+  <p>Messages:</p>
+<div id="console_box"></div>
 <p>Messages:</p>
 <div id="console_box_time"></div>
 
@@ -192,7 +197,9 @@ function update_forcegraph(){
 function redraw_forcegraph(){
   var dateselection = document.getElementById("date_choice");
   var date_choice = dateselection.options[dateselection.selectedIndex].value;
-  var data_file1 = "ccomponents2015_"+date_choice+".json";
+  var dateselection = document.getElementById("year_choice");
+  var year_choice = dateselection.options[dateselection.selectedIndex].value;
+  var data_file1 = "ccomponents"+year_choice+"_"+date_choice+".json";
   forcegraph.redraw(data_file1,d3.select("#svg-forcegraph"))
 }
 </script>

@@ -72,7 +72,11 @@ var forcegraph = (function(){
       console.log('date change!');
       get_input_and_redraw();
     });
-  
+    // add action to the change of year
+    d3.selectAll('[name="year_choice"]').on('click',function(){
+      console.log('date change!');
+      get_input_and_redraw();
+    });
   }
   
 
@@ -215,7 +219,10 @@ var forcegraph = (function(){
   function get_input_and_redraw(){
     var dateselection = document.getElementById("date_choice");
     var date_choice = dateselection.options[dateselection.selectedIndex].value;
-    var data_file1 = "ccomponents2015_"+date_choice+".json";
+    var dateselection = document.getElementById("year_choice");
+    var year_choice = dateselection.options[dateselection.selectedIndex].value;
+    var data_file1 = "ccomponents"+year_choice+"_"+date_choice+".json";
+    //var data_file1 = "ccomponents2015_"+date_choice+".json";
     forcegraph.redraw(data_file1,_svg_raw)
   }
 
