@@ -11,13 +11,29 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="jquery-3.1.1.js"></script>
 
-
+<select name="date_choice" id="date_choice">
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+  <option value="6">6</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="9">9</option>
+  <option value="10">10</option>
+  <option value="11">11</option>
+  <option value="12">12</option>
+</select>
+<br><br>
+<input type="button" onclick="redraw_forcegraph()" value="Choose this month">
 
 <div id="graph_props">
   <div id="graph_name"></div>
   <div id ="graph_start_date"></div>
   <div id = "graph_end_date"></div>
 </div>
+
 <div>
 Options
 <form name="colorform">
@@ -46,9 +62,12 @@ Options
 
 <script>
 var series = 'LBDL';
-console_box = document.getElementById("console_box");
-var data_file1 = "data/ccomponent.json";
-forcegraph.start(data_file1,d3.select("#svg-forcegraph"));
+var console_box = document.getElementById("console_box");
+var dateselection = document.getElementById("date_choice");
+var date_choice = dateselection.options[dateselection.selectedIndex].value;
+
+var data_file_treegraph = "ccomponents2015_"+date_choice+".json";
+forcegraph.start(data_file_treegraph,d3.select("#svg-forcegraph"));
 //var data_file2 = "data/treegraphmarseille.json";
 var data_file_treegraph = "data/treegraphLBDL.json";
 treegraph.start(data_file_treegraph,d3.select("#svg-treegraph"));
@@ -81,7 +100,6 @@ function dashboard_event_call(id,word,data_start_date,data_end_date){
 
 
 function run_python(word,data_start_date,data_end_date){
-  url = "http://localhost:8082/exec?word="+word
   url = "http://localhost:8082/exec"
   data_json = {"word" : word,"series" : series,
                 "start_date" : data_start_date,"end_date" : data_end_date}
@@ -104,8 +122,12 @@ function run_python(word,data_start_date,data_end_date){
     console.log('resquest succeeded');
     data_file_treegraph = get_filename(data);
     console.log('file to display: '+data_file_treegraph);
-    treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"));
     console_box.innerHTML = "Computation completed."
+    if (data_file_treegraph.indexOf('.json') !== -1){
+      treegraph.update(data_file_treegraph,d3.select("#svg-treegraph"));
+    } else{
+      console_box.innerHTML = "Computation completed. But invalid data file returned."
+    }
   }
   function get_filename(server_response){
     // the filename is the last string sent by the server
@@ -123,6 +145,13 @@ function update_treegraph(){
 
 function update_forcegraph(){
   forcegraph.update()
+}
+
+function redraw_forcegraph(){
+  var dateselection = document.getElementById("date_choice");
+  var date_choice = dateselection.options[dateselection.selectedIndex].value;
+  var data_file1 = "ccomponents2015_"+date_choice+".json";
+  forcegraph.redraw(data_file1,d3.select("#svg-forcegraph"))
 }
 </script>
 

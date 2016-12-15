@@ -20,12 +20,14 @@ var forcegraph = (function(){
 
   var graph = {};
   var simulation = {};
+  var _svg_raw ={};
   var svg ={};
   var link = {};
   var nodec = {};
   var text1 = {};
 
   function start(data_file,svg_in) {
+    _svg_raw = svg_in;
     _svg_width = +svg_in.attr("width"),
         _svg_height = +svg_in.attr("height");
 
@@ -58,7 +60,22 @@ var forcegraph = (function(){
       write_graph_props(graph);
       update();
     });
+
+    // add action on radio button selection
+    d3.selectAll('[name="colorform"] [name="colorchoice"]').on('click',function(){
+      console.log('color change!');
+      update();
+    });
+
+    // add action to the change of month
+    d3.selectAll('[name="date_choice"]').on('click',function(d){
+      console.log('date change!');
+      console.log(d);
+      get_input_and_redraw();
+    });
+  
   }
+  
 
   /////////////////////////////////////////////////////////////////////:
   function write_graph_props(graph){
@@ -157,6 +174,15 @@ var forcegraph = (function(){
       .style("opacity", "0.6");
   }
 
+  function redraw(data_file,svg_in){
+    clean_svg(svg_in);
+    start(data_file,svg_in);
+  }
+
+
+  function clean_svg(svg_in){
+    svg_in.selectAll("*").remove();
+  }
 
   function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -187,8 +213,16 @@ var forcegraph = (function(){
     }
   }
 
+  function get_input_and_redraw(){
+    var dateselection = document.getElementById("date_choice");
+    var date_choice = dateselection.options[dateselection.selectedIndex].value;
+    var data_file1 = "ccomponents2015_"+date_choice+".json";
+    forcegraph.redraw(data_file1,_svg_raw)
+  }
+
   return {
     start : start,
-    update : update
+    update : update,
+    redraw : redraw
   }
 })();

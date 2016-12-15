@@ -35,6 +35,13 @@ var treegraph = (function(){
     figure = svg.append("g").attr("id","treegraph")
               .attr("transform", "translate(" + (_svg_width / 2 ) + "," + (_svg_height / 2 ) + ")");
               //.attr("transform", "rotate(90)");
+    
+    // add action on radio button selection
+    d3.selectAll('[name="colorform_treegraph"] [name="color_choice_treegraph"]').on('click',function(){
+      console.log('color change!');
+      update();
+    });
+
     handle_data(data_file);
   }
 
@@ -47,14 +54,19 @@ var treegraph = (function(){
         .size([360, _svg_width*3/4])
         .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
 
-    d3.json(data_file, function(error, data) {
-      if (error) throw error;
+  
+      d3.json(data_file, function(error, data) {
+      if (error) {
+        console.log('Data file not found.')
+        console_box.innerHTML = 'Data file not found.';
+        throw error;
+      }
 
       //var root = tree(stratify(data));
       //var root = tree(data);
       var root = tree(d3.hierarchy(data));
       draw_graph(root);
-    });
+      });
   }
 
   function draw_graph(tree_data){
