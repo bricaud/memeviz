@@ -68,9 +68,8 @@ var forcegraph = (function(){
     });
 
     // add action to the change of month
-    d3.selectAll('[name="date_choice"]').on('click',function(d){
+    d3.selectAll('[name="date_choice"]').on('click',function(){
       console.log('date change!');
-      console.log(d);
       get_input_and_redraw();
     });
   
@@ -209,7 +208,7 @@ var forcegraph = (function(){
       d.fy = null;
     }
     else {
-      dashboard_event_call(1,d.name,data_start_date,data_end_date);
+      dashboard_event_call(1,d,data_start_date,data_end_date);
     }
   }
 
