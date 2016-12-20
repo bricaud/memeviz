@@ -77,6 +77,13 @@ var forcegraph = (function(){
       console.log('date change!');
       get_input_and_redraw();
     });
+    // add action to the change of series
+    d3.selectAll('[name="series_choice"]').on('click',function(){
+      console.log('series change!');
+      get_input_and_redraw();
+    });
+
+
   }
   
 
@@ -86,6 +93,9 @@ var forcegraph = (function(){
     document.getElementById("graph_name").innerHTML = 'Series name: '+name;
     document.getElementById("graph_start_date").innerHTML = 'Start date: '+graph.start_date;
     document.getElementById("graph_end_date").innerHTML = 'End date: '+graph.end_date;
+    console.log(graph.graph.threshold)
+    document.getElementById("graph_threshold").innerHTML = 'Threshold: '+graph.graph.threshold;
+    
   }
 
   ////////////////////////////////////////////////////////////////////:
@@ -221,7 +231,10 @@ var forcegraph = (function(){
     var date_choice = dateselection.options[dateselection.selectedIndex].value;
     var dateselection = document.getElementById("year_choice");
     var year_choice = dateselection.options[dateselection.selectedIndex].value;
-    var data_file1 = "ccomponents"+year_choice+"_"+date_choice+".json";
+    var seriesselection = document.getElementById("series_choice");
+    var series_choice = seriesselection.options[seriesselection.selectedIndex].value;
+    var data_file1 = "cc_"+series_choice+"_"+year_choice+"_"+date_choice+".json";
+
     //var data_file1 = "ccomponents2015_"+date_choice+".json";
     forcegraph.redraw(data_file1,_svg_raw)
   }

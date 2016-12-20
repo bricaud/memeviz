@@ -5,6 +5,8 @@
 <link rel="stylesheet" type="text/css" href="treegraph/treegraph-module.css">
 <link rel="stylesheet" type="text/css" href="forcegraph/forcegraph-module.css">
 <link rel="stylesheet" type="text/css" href="timeseries/timeseries-module.css">
+<link rel="stylesheet" type="text/css" href="dashboard.css">
+
 </head>
 <body>
 
@@ -12,6 +14,8 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="jquery-3.1.1.js"></script>
 
+<div>
+Mois:
 <select name="date_choice" id="date_choice">
   <option value="1">1</option>
   <option value="2">2</option>
@@ -26,70 +30,84 @@
   <option value="11">11</option>
   <option value="12">12</option>
 </select>
+Année:
 <select name="year_choice" id="year_choice">
   <option value="2015">2015</option>
   <option value="2016">2016</option>
 </select>
+Série:
+<select name="series_choice" id="series_choice">
+  <option value="LBDL">LBDL</option>
+  <option value="marseille">Marseille</option>
+  <option value="baron_noir">Baron noir</option>
+  <option value="versailles">Versailles</option>
+</select>
+</div>
+<!--
 <br><br>
 <input type="button" onclick="redraw_forcegraph()" value="Choose this month">
-
+-->
 <div id="graph_props">
   <div id="graph_name"></div>
   <div id ="graph_start_date"></div>
   <div id = "graph_end_date"></div>
+  <div id = "graph_threshold"></div>
 </div>
 
 <div>
 Options
 <form name="colorform">
-  <input type="radio" name="colorchoice" value="absolute" checked> Color according to absolute time<br>
-  <input type="radio" name="colorchoice" value="relative"> color according to relative component time<br>
-  <input type="button" onclick="update_forcegraph()" value="Update color">
+  <input type="radio" name="colorchoice" value="absolute" checked> Color according to absolute time 
+  <input type="radio" name="colorchoice" value="relative"> color according to relative component time
+  <!-- <input type="button" onclick="update_forcegraph()" value="Update color">-->
 </form> 
 </div>
 
-<svg width="960" height="960" id="svg-forcegraph"></svg>
-
-Time series:
+<div id="Global">
+  <div id="gauche">
+    <svg width="800" height="800" id="svg-forcegraph"></svg>
+  </div>
+  <div id="droite">
+    Activité temporelle:
     <div class="days-hours-heatmap">
-    <!-- heatmap -->
+      <!-- heatmap -->
       <svg role="heatmap" class="heatmap"></svg>
       <!-- calibration and render type controller -->
       <div class="calibration" role="calibration">
         <div class="group" role="example">
-          <svg width="120" height="17">
+          <svg width="170" height="27">
           </svg>
           <div role="description" class="description">
-            <label>Less</label>
-            <label>More</label>
+            <label>10</label> <!--Faible, Elevé-->
+            <label>200</label>
           </div>        
         </div>
         <div role="toggleDisplay" class="display-control">
           <div>
             <input type="radio" name="displayType" checked/>
-            <label>count</label>
-          </div>
-          <div>
+            <label>Nbre d'occurences</label>
             <input type="radio" name="displayType"/>
-            <label>daily</label> 
+            <label>Actif/non actif</label> 
           </div>
         </div>
       </div>
     </div>
-  <p>Messages:</p>
+  </div>
+</div>
+<p>Messages:</p>
 <div id="console_box"></div>
 <p>Messages:</p>
 <div id="console_box_time"></div>
 
 
-<p>Word treegraph:</p>
+<p>Arbre de mots:</p>
 <svg width="960" height="960" id="svg-treegraph"></svg>
 <div>
 Options
 <form name="colorform_treegraph">
   <input type="radio" name="color_choice_treegraph" value="media_color" checked> Color according to the main media<br>
   <input type="radio" name="color_choice_treegraph" value="time_color"> color according to relative time of appearance<br>
-  <input type="button" onclick="update_treegraph()" value="Update color">
+  <!-- <input type="button" onclick="update_treegraph()" value="Update color">-->
 </form> 
 </div>
 
@@ -106,11 +124,26 @@ var console_box = document.getElementById("console_box");
 var dateselection = document.getElementById("date_choice");
 var date_choice = dateselection.options[dateselection.selectedIndex].value;
 
-var data_file_treegraph = "ccomponents2015_"+date_choice+".json";
-forcegraph.start(data_file_treegraph,d3.select("#svg-forcegraph"));
+var data_files = get_inputs();
+forcegraph.start(data_files.forcegraph,d3.select("#svg-forcegraph"));
 //var data_file2 = "data/treegraphmarseille.json";
-var data_file_treegraph = "data/treegraphLBDL.json";
-treegraph.start(data_file_treegraph,d3.select("#svg-treegraph"));
+//var data_file_treegraph = "data/treegraphLBDL.json";
+treegraph.start(data_files.treegraph,d3.select("#svg-treegraph"));
+
+
+function get_inputs(){
+  var dateselection = document.getElementById("date_choice");
+  var date_choice = dateselection.options[dateselection.selectedIndex].value;
+  var dateselection = document.getElementById("year_choice");
+  var year_choice = dateselection.options[dateselection.selectedIndex].value;
+  var seriesselection = document.getElementById("series_choice");
+  var series_choice = seriesselection.options[seriesselection.selectedIndex].value;
+  var data_file_forcegraph = "cc_"+series_choice+"_"+year_choice+"_"+date_choice+".json";
+  var data_file_treegraph = "data/treegraph"+series_choice+".json";
+  return {forcegraph : data_file_forcegraph,
+    treegraph:data_file_treegraph
+  };
+}
 
 /*
 function dashboard_event_call(id,object){
@@ -199,7 +232,10 @@ function redraw_forcegraph(){
   var date_choice = dateselection.options[dateselection.selectedIndex].value;
   var dateselection = document.getElementById("year_choice");
   var year_choice = dateselection.options[dateselection.selectedIndex].value;
-  var data_file1 = "ccomponents"+year_choice+"_"+date_choice+".json";
+  var seriesselection = document.getElementById("series_choice");
+  var series_choice = seriesselection.options[dateselection.selectedIndex].value;
+  var data_file1 = "cc_"+series_choice+"_"+year_choice+"_"+date_choice+".json";
+
   forcegraph.redraw(data_file1,d3.select("#svg-forcegraph"))
 }
 </script>

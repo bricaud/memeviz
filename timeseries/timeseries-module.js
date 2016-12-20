@@ -1,10 +1,10 @@
 var timeseries = (function(){
   //UI configuration
-  var itemSize = 18,
+  var itemSize = 28,
     cellSize = itemSize-1,
     width = 900,
     height = 800,
-    margin = {top:20,right:125,bottom:20,left:150};
+    margin = {top:50,right:100,bottom:30,left:150};
 
  /*
   //formats
@@ -103,7 +103,7 @@ var timeseries = (function(){
 
       svg.append("text")
         //.attr("transform", "rotate(-90)")
-        .attr("y",0)
+        .attr("y",20)
         .attr("x",margin.left/2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
@@ -111,13 +111,42 @@ var timeseries = (function(){
 
       svg.append("text")
         .attr("y", 0 )
-        .attr("x",75+width+margin.left)
+        .attr("x",margin.left+width/2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Day of the month");      
 
       //render heatmap rects
       dayOffset = dateExtent[0];
+      rect_group = heatmap.selectAll('g')
+        .data(data)
+      .enter().append('g');
+      
+
+      rect = rect_group.append('rect')
+        .attr('width',cellSize)
+        .attr('height',cellSize)
+        .attr('x',function(d){
+          return itemSize*(d.day-dayOffset);
+        })
+        .attr('y',function(d){            
+          return d.word_id_nb*itemSize;
+        })
+        .attr('fill','#ffffff');
+
+      rect.append('title')
+        .text(function(d){
+          return 'Occurence: '+d.degree+'\n day: '+d.day+' word: '+d.name;
+        });
+      // Add the number inside the rectangles
+      rect_group.append("text").attr('x',function(d){
+          return itemSize*(d.day-dayOffset)+itemSize/10;
+        })
+        .attr('y',function(d){            
+          return d.word_id_nb*itemSize+itemSize/4*3;
+        }).text(function(d){return d.degree;});
+
+       /* 
       rect = heatmap.selectAll('rect')
         .data(data)
       .enter().append('rect')
@@ -136,6 +165,8 @@ var timeseries = (function(){
         .text(function(d){
           return 'Occurence: '+d.degree+'\n day: '+d.day+' word: '+d.name;
         });
+      */
+      //rect.text(function(d){return d.degree;});
 
       renderColor();
     });
@@ -185,7 +216,7 @@ var timeseries = (function(){
         //choose color dynamicly      
         var colorIndex = d3.scaleQuantize()
           .range([0,1,2,3,4,5])
-          .domain((renderByCount?[0,500]:[0,1]));
+          .domain((renderByCount?[10,200]:[0,1]));
 
         return d3.interpolate(a,colorCalibration[colorIndex(d.degree)]);
       });
