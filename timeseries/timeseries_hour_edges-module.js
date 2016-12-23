@@ -6,6 +6,7 @@ var timeseries = (function(){
     height = 800,
     margin = {top:50,right:100,bottom:30,left:250};
 
+  
  /*
   //formats
   var hourFormat = d3.time.format('%H'),
@@ -87,8 +88,8 @@ var timeseries = (function(){
       uniquevalues = d3.map(data, function(d) {return d.name;}).keys();
       console.log(uniquevalues);
       //console.log(dateExtent);
-      console.log(date_extent);
-      console.log(date_extent[0].getHours());
+      //console.log(date_extent);
+      //console.log(date_extent[0].getHours());
 
       axisWidth = itemSize*date_hourdiff;
       axisHeight = itemSize*(idExtent[1]-idExtent[0]);
@@ -96,7 +97,7 @@ var timeseries = (function(){
       //size heatmap
       width=axisWidth;
       height=axisHeight;
-      console.log(width);
+      //console.log(width);
 
       heatmap = svg
       .attr('width',width+margin.left+margin.right)
@@ -241,12 +242,22 @@ var timeseries = (function(){
       })
       .duration(500)
       .attrTween('fill',function(d,i,a){
-        //choose color dynamicly      
-        var colorIndex = d3.scaleQuantize()
-          .range([0,1,2,3,4,5])
-          .domain((renderByCount?[10,200]:[0,1]));
-
-        return d3.interpolate(a,colorCalibration[colorIndex(d.occur)]);
+        //choose color dynamicly 
+        if (renderByCount){     
+          var colorIndex = d3.scaleQuantize()
+            .range([0,1,2,3,4,5])
+            .domain([1,200]);
+          coloring = d3.interpolate(a,colorCalibration[colorIndex(d.occur)]);
+        }
+        else {
+          var mediacolor = d3.scaleOrdinal().domain(['Twitter','Blog','Comment','Dailymotion','Facebook',
+                                        'Forum','Gplus','Instagram','Media','Website','Youtube','Avis'])
+                                .range(['steelblue','green','brown','lightblue','blue','pink','lightred',
+                                  'yellow','orange','lightgreen','red','grey']);
+          console.log(d.main_media)
+          coloring = d3.interpolate(a,mediacolor(d.main_media));
+        }
+        return coloring;
       });
   }
 

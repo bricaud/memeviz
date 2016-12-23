@@ -78,7 +78,7 @@ Options
           <svg width="170" height="27">
           </svg>
           <div role="description" class="description">
-            <label>10</label> <!--Faible, Elevé-->
+            <label>1</label> <!--Faible, Elevé-->
             <label>200</label>
           </div>        
         </div>
@@ -169,7 +169,7 @@ function dashboard_event_call(id,node_data,data_start_date,data_end_date){
   console.log(node_data);
   console.log(node_data.name);
   console_box.innerHTML ="Computing for word "+node_data.name+"...";
-  //run_python(word,data_start_date,data_end_date);
+  run_python(node_data.name,data_start_date,data_end_date);
   path = 'ccomponents/'
   cc_id = node_data.component_id
   filename = path+'timecomponent_'+cc_id+'.json'
