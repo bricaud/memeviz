@@ -20,6 +20,7 @@ var timeseries = (function(){
     dateOffset = 0,
     colorCalibration = ['#f6faaa','#FEE08B','#FDAE61','#F46D43','#D53E4F','#9E0142'],
     //colorCalibration = ['#9E0142'],
+    colorScaleDomain=[1,200],
     dailyValueExtent = {};
 
   //axises and scales
@@ -201,10 +202,17 @@ var timeseries = (function(){
     });
   }
 
-  function initCalibration(){
+  function init(){
   
-    d3.select('[role="calibration"] [role="example"]').select('svg')
-      .selectAll('rect').data(colorCalibration).enter()
+    var svg = d3.select('[role="calibration"] [role="example"]').select('svg');
+    
+    var scalelength = colorCalibration.length*(cellSize+1);
+
+    scalesvg = svg
+    .attr('width',scalelength)
+    .attr('height',cellSize+20);
+
+    scalesvg.selectAll('rect').data(colorCalibration).enter()
       .append('rect')
       .attr('width',cellSize)
       .attr('height',cellSize)
@@ -215,7 +223,25 @@ var timeseries = (function(){
         return d;
       });
 
-    
+    scalesvg.append('text')
+      .attr("y", 30 )
+      .attr("x",10)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle").text(colorScaleDomain[0]);
+
+    scalesvg.append('text')
+      .attr("y", 30 )
+      .attr("x",scalelength-15)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle").text(colorScaleDomain[1]);
+
+    //bind click event
+    d3.selectAll('[role="calibration"] [name="displayType"]').on('click',function(){
+      renderColor();
+    });
+  }
+
+  function cleansvg() {
     svg = d3.select('[role="heatmap"]');
     svg.selectAll("*").remove();
 
@@ -227,10 +253,6 @@ var timeseries = (function(){
     .attr('height',height-margin.top-margin.bottom)
     .attr('transform','translate('+margin.left+','+margin.top+')');
 
-    //bind click event
-    d3.selectAll('[role="calibration"] [name="displayType"]').on('click',function(){
-      renderColor();
-    });
   }
 
   function renderColor(){
@@ -246,7 +268,7 @@ var timeseries = (function(){
         if (renderByCount){     
           var colorIndex = d3.scaleQuantize()
             .range([0,1,2,3,4,5])
-            .domain([1,200]);
+            .domain(colorScaleDomain);
           coloring = d3.interpolate(a,colorCalibration[colorIndex(d.occur)]);
         }
         else {
@@ -254,7 +276,6 @@ var timeseries = (function(){
                                         'Forum','Gplus','Instagram','Media','Website','Youtube','Avis'])
                                 .range(['steelblue','green','brown','lightblue','blue','pink','lightred',
                                   'yellow','orange','lightgreen','red','grey']);
-          console.log(d.main_media)
           coloring = d3.interpolate(a,mediacolor(d.main_media));
         }
         return coloring;
@@ -262,7 +283,8 @@ var timeseries = (function(){
   }
 
   return {
-    initCalibration : initCalibration,
+    init : init,
+    cleansvg : cleansvg,
     show : show
   }
   //extend frame height in `http://bl.ocks.org/`

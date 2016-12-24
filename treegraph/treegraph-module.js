@@ -42,7 +42,8 @@ var treegraph = (function(){
       update();
     });
 
-    handle_data(data_file);
+    figure.append('text').text('Click on a node of the graph to start')
+    //handle_data(data_file);
   }
 
   function handle_data(data_file){

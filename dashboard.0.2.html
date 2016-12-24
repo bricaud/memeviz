@@ -64,9 +64,25 @@ Options
 </div>
 
 <div id="Global">
+  <!-- ------------------------------------------------------------ -->
   <div id="gauche">
     <svg width="800" height="800" id="svg-forcegraph"></svg>
+    <p>Messages:</p>
+    <div id="console_box"></div>
+    <p>Messages:</p>
+    <div id="console_box_time"></div>
+    <p>Arbre de mots:</p>
+    <svg width="800" height="800" id="svg-treegraph"></svg>
+    <div>
+      Options
+      <form name="colorform_treegraph">
+        <input type="radio" name="color_choice_treegraph" value="media_color" checked> Color according to the main media<br>
+        <input type="radio" name="color_choice_treegraph" value="time_color"> color according to relative time of appearance<br>
+        <!-- <input type="button" onclick="update_treegraph()" value="Update color">-->
+      </form> 
+    </div>
   </div>
+  <!-- -------------------------------------------------------- -->
   <div id="droite">
     Activité temporelle:
     <div class="days-hours-heatmap">
@@ -75,12 +91,7 @@ Options
       <!-- calibration and render type controller -->
       <div class="calibration" role="calibration">
         <div class="group" role="example">
-          <svg width="170" height="27">
-          </svg>
-          <div role="description" class="description">
-            <label>1</label> <!--Faible, Elevé-->
-            <label>200</label>
-          </div>        
+          <svg width="170" height="50"></svg>      
         </div>
         <div role="toggleDisplay" class="display-control">
           <div>
@@ -94,22 +105,7 @@ Options
     </div>
   </div>
 </div>
-<p>Messages:</p>
-<div id="console_box"></div>
-<p>Messages:</p>
-<div id="console_box_time"></div>
 
-
-<p>Arbre de mots:</p>
-<svg width="960" height="960" id="svg-treegraph"></svg>
-<div>
-Options
-<form name="colorform_treegraph">
-  <input type="radio" name="color_choice_treegraph" value="media_color" checked> Color according to the main media<br>
-  <input type="radio" name="color_choice_treegraph" value="time_color"> color according to relative time of appearance<br>
-  <!-- <input type="button" onclick="update_treegraph()" value="Update color">-->
-</form> 
-</div>
 
 
 
@@ -119,7 +115,6 @@ Options
 <script src="treegraph/treegraph-module.js"></script>
 <script src="timeseries/timeseries_hour_edges-module.js"></script>
 <script>
-var series = 'LBDL';
 var console_box = document.getElementById("console_box");
 var dateselection = document.getElementById("date_choice");
 var date_choice = dateselection.options[dateselection.selectedIndex].value;
@@ -129,7 +124,7 @@ forcegraph.start(data_files.forcegraph,d3.select("#svg-forcegraph"));
 //var data_file2 = "data/treegraphmarseille.json";
 //var data_file_treegraph = "data/treegraphLBDL.json";
 treegraph.start(data_files.treegraph,d3.select("#svg-treegraph"));
-
+timeseries.init();
 
 function get_inputs(){
   var dateselection = document.getElementById("date_choice");
@@ -174,14 +169,16 @@ function dashboard_event_call(id,node_data,data_start_date,data_end_date){
   cc_id = node_data.component_id
   filename = path+'timecomponent_'+cc_id+'.json'
   console.log('file to open '+filename)
-  timeseries.initCalibration();
+  timeseries.cleansvg();
   timeseries.show(filename)
 }
 
 
 function run_python(word,data_start_date,data_end_date){
+  var seriesselection = document.getElementById("series_choice");
+  var series_choice = seriesselection.options[seriesselection.selectedIndex].value;
   url = "http://localhost:8082/exec"
-  data_json = {"word" : word,"series" : series,
+  data_json = {"word" : word,"series" : series_choice,
                 "start_date" : data_start_date,"end_date" : data_end_date}
   console.log('sending an ajax request')
   $.ajax({
