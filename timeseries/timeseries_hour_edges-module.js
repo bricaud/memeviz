@@ -87,10 +87,22 @@ var timeseries = (function(){
       });
 
       uniquevalues = d3.map(data, function(d) {return d.name;}).keys();
-      console.log(uniquevalues);
-      //console.log(dateExtent);
+      //console.log(uniquevalues);
+      //console.log(data);
       //console.log(date_extent);
       //console.log(date_extent[0].getHours());
+
+      houractivity = d3.nest().key(function(d){
+                date = new Date(d.year,d.month-1,d.day,d.hour);
+                return date.toUTCString();
+              })
+              .rollup(function(v) {return d3.sum(v,function(d){return d.occur;});})
+              .entries(data);
+      houractivity2 = d3.entries(houractivity);
+      //console.log('time data:')
+      //console.log(houractivity2)
+
+      
 
       axisWidth = itemSize*date_hourdiff;
       axisHeight = itemSize*(idExtent[1]-idExtent[0]);
@@ -99,6 +111,9 @@ var timeseries = (function(){
       width=axisWidth;
       height=axisHeight;
       //console.log(width);
+
+      make_activity_chart(houractivity2,itemSize*(date_hourdiff+1));
+
 
       heatmap = svg
       .attr('width',width+margin.left+margin.right)
@@ -280,6 +295,111 @@ var timeseries = (function(){
         }
         return coloring;
       });
+  }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function make_activity_chart(timedata,plot_width){
+    var figure = d3.select(".globalActivity"),
+    margin = {top: 50, right: 20, bottom: 30, left: 250},
+    //width = +figure.attr("width") - margin.left - margin.right,
+    width = plot_width,
+    height = +figure.attr("height") - margin.top - margin.bottom;
+
+    
+    ordered_list_of_dates = timedata.map(function(d) {return new Date(d.value.key);}).sort(function(a,b){
+        return a-b;
+      });
+    //console.log(ordered_list_of_dates)
+    date_to_process = ordered_list_of_dates[0];
+    date_day = date_to_process.getDate();
+    //date_month = date_to_process.getMonth();
+    giveMonth = d3.timeFormat("%B");
+    date_month = giveMonth(date_to_process);
+
+    figure.selectAll("*").remove();
+    figure.attr("width",plot_width + margin.left + margin.right);
+    //xAxis.scale(xAxisScale.range([0,axisWidth]).domain([date_extent[0],date_extent[1]])).ticks(d3.timeHour.every(1));
+
+    var x = d3.scaleBand().rangeRound([0, width]).paddingInner(0.01).paddingOuter(0),
+      y = d3.scaleLinear().rangeRound([height, 0]);
+
+    var g = figure.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    //console.log(d3.extent(timedata,function(d) {return new Date(d.value.key.split('$').join(''));}))
+    //console.log(d3.extent(timedata,function(d) {return new Date(d.key.replace(/['"]+/g, ''));}))
+    //console.log([0, d3.max(timedata, function(d) { return d.value.value; })])
+
+    //x.domain(d3.extent(timedata,function(d) {return new Date(d.value.key.split('$').join(''));}));
+    x.domain(ordered_list_of_dates);
+    y.domain([0, d3.max(timedata, function(d) { return d.value.value; })]);
+    bar_length = x.bandwidth();
+    //console.log(timedata)
+
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%_I %p")))//  ("%H:00")))//
+        .selectAll("text")
+        .attr("y", 0)
+        .attr("x", -15)
+        .attr("dy", ".45em").attr("transform", "rotate(-90)");
+
+    g.append("g")
+        .attr("class", "axis axis--y")
+        .call(d3.axisLeft(y).ticks(2));
+
+    g.append("text")
+        .attr("y", -height-margin.top/2 )
+        .attr("x",width/2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text('Jour: '+date_day+" "+date_month);        
+
+    //g.append("text").attr("x",50).attr("y",50).text(timedata);
+
+    function return_x_value(d){
+      //console.log(d.value.key);
+      dadate = new Date(d.value.key);//.split('$').join(''));
+      //dadate = new Date(d.key);
+      //console.log(x(dadate));
+      return x(dadate);
+    }
+    g2 = g.append("g");
+    var bar = g2.selectAll("g")
+      .data(timedata)
+      .enter().append("g")
+      .attr("transform", function(d) { return "translate(" + return_x_value(d) + ",0)"; });
+      //.attr("transform", function(d) { return "translate(" + x(new Date(d.key.split('$').join(''))) + ",0)"; });
+
+    bar.append("rect")
+      .attr("y", function(d) { return y(d.value.value); }) 
+      .attr("height", function(d) { return height - y(d.value.value); }) 
+      .attr("width",bar_length)// x.bandwidth())
+      .attr("fill",'steelblue'); 
+
+    function return_y (d) { return y(d.value.value) - 10; }
+  
+    bar.append("g")
+//   each text's x coord inherit from each g's transform-translate, after translate, each rect's topLeft corner its origin as (0, 0)
+      //.attr("x", x.bandwidth() /2 )
+      .attr("y", function(d) { return y(d.value.value) - 10; })
+      .attr("dy", "0.35em")
+      .append("text").attr("transform", "translate("+bar_length /4 +","+ 10 +")rotate(-45)")
+      //.attr("dy", "0.35em")
+      .text(function(d) { return d.value.value; });
+
+  /*  g.selectAll(".bar")
+      .data(timedata)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return 50; }) //x(d3.keys(d))
+        .attr("y", function(d) { return 50; })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height ; });
+  */
   }
 
   return {
