@@ -40,7 +40,7 @@ Options
 </form> 
 </div>
 
-<svg width="960" height="600"></svg>
+<svg width="1280" height="720"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script>
@@ -143,7 +143,7 @@ function update_graph(graph){
   var text2 = node.append("text")
     .attr("x", 8)
     .attr("y", ".1em")
-    .text(function(d) { return d.start_time;});
+    .text(function(d) { return d.start_time.substr(0,5);});
 
   simulation
       .nodes(graph.nodes)
