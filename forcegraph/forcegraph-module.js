@@ -233,7 +233,8 @@ var forcegraph = (function(){
     var year_choice = dateselection.options[dateselection.selectedIndex].value;
     var seriesselection = document.getElementById("series_choice");
     var series_choice = seriesselection.options[seriesselection.selectedIndex].value;
-    var data_file1 = "cc_"+series_choice+"_"+year_choice+"_"+date_choice+".json";
+    var path ="data/"+series_choice+"/c_components/";
+    var data_file1 = path+"cc_"+series_choice+"_"+year_choice+"_"+date_choice+".json";
 
     //var data_file1 = "ccomponents2015_"+date_choice+".json";
     forcegraph.redraw(data_file1,_svg_raw)

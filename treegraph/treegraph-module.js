@@ -5,6 +5,7 @@ var treegraph = (function(){
   var _svg = {};
   var _svg_width = 0, 
     _svg_height = 0;
+  var _data_path = "";
 
   var figure = {};
   var color = d3.scaleOrdinal(d3.schemeCategory20);
@@ -14,11 +15,13 @@ var treegraph = (function(){
 
   var color_shade = d3.scaleSequential(d3.interpolateReds);
 
-  function start(data_file,svg_in){
+
+  function start(data_path,svg_in){
 
     _svg_width = +svg_in.attr("width");
     _svg_height = +svg_in.attr("height");
     _svg = svg_in;
+    _data_path = data_path;
 
     var borderPath = svg_in.append("rect")
             .attr("x", 0)
@@ -56,7 +59,7 @@ var treegraph = (function(){
         .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
 
   
-      d3.json(data_file, function(error, data) {
+      d3.json(_data_path+data_file, function(error, data) {
       if (error) {
         console.log('Data file not found.')
         console_box.innerHTML = 'Data file not found.';
