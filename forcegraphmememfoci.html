@@ -79,7 +79,9 @@ var simulation = d3.forceSimulation()
     .force("center", d3.forceCenter(width / 2, height / 2));
 
 //////////////////////////////////////////////////////////////////////:
-var graph = d3.json("cc_evolution.json", function(error, data) {
+
+//var graph = d3.json("cc_evolution.json", function(error, data) {
+var graph = d3.json("cc_evolution_marseille.json", function(error, data) {
   if (error) throw error;
   graph = data;
   write_graph_props(graph);
@@ -140,11 +142,12 @@ function update_graph(graph){
     .attr("y", ".31em")
     .text(function(d) { return d.name;});
 
+/*
   var text2 = node.append("text")
     .attr("x", 8)
     .attr("y", ".1em")
     .text(function(d) { return d.start_time.substr(0,5);});
-
+*/
   simulation
       .nodes(graph.nodes)
       .on("tick", ticked);
@@ -168,9 +171,9 @@ function update_graph(graph){
     text1
         .attr("x", function(d) { return d.x+12; })
         .attr("y", function(d) { return d.y; });
-    text2
-        .attr("x", function(d) { return d.x+12; })
-        .attr("y", function(d) { return d.y+8; });        
+//    text2
+//        .attr("x", function(d) { return d.x+12; })
+//        .attr("y", function(d) { return d.y+8; });        
   }
 
   svg.append("defs").selectAll("marker")
